@@ -151,7 +151,6 @@ func main() {
 	twilioSid = os.Getenv("TWILIO_SID")
 	twilioToken = os.Getenv("TWILIO_TOKEN")
 	twilioToNotify = os.Getenv("TWILIO_TO_NOTIFY")
-	//notifyAddresses = os.Getenv("TO_NOTIFY")
 
 	joinReg, _ := regexp.Compile(`\[Server thread\/INFO\]: ([a-zA-Z0-9_]{1,16}) joined the game`)
 	leftReg, _ := regexp.Compile(`\[Server thread\/INFO\]: ([a-zA-Z0-9_]{1,16}) left the game`)
@@ -209,6 +208,4 @@ func main() {
 			}
 		}
 	}
-
-	fmt.Println("Hello World")
 }
