@@ -17,8 +17,11 @@ export TWILIO_SID=
 export TWILIO_TOKEN=
 # What number to send notifications from. This number
 # must already be provisioned in your Twilio account
+# must also start with +<COUNTRY_CODE> and have no formatting
+# information such. For example +15554443333
 export TWILIO_PHONE=
-# List of comma seperated phone numbers to notify
+# List of comma seperated phone numbers to notify. Same format
+# as for TWILIO_PHONE
 export TWILIO_TO_NOTIFY=
 
 
