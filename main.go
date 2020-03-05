@@ -17,7 +17,6 @@ import (
 )
 
 var smtpToNotify, smtpSendAs, smtpHost, smtpPort, smtpUser, smtpPass, twilioPhone, twilioSid, twilioToken string
-var twilioToNotify []string
 var phoneNumberMap map[string]string
 
 func email(from string, to []string, subject string, body string) error {
@@ -131,14 +130,10 @@ func notifyJoined(username string) error {
 	notificationMessage := fmt.Sprintf("%s joined your Minecraft server", username)
 
 	var smsRecipients []string
-	if userPhoneNumber, ok := phoneNumberMap[username]; ok {
-		for _, targetPhoneNumber := range twilioToNotify {
-			if targetPhoneNumber != userPhoneNumber {
-				smsRecipients = append(smsRecipients, targetPhoneNumber)
-			}
+	for configUsername, phoneNumber := range phoneNumberMap {
+		if configUsername != username {
+			smsRecipients = append(smsRecipients, phoneNumber)
 		}
-	} else {
-		smsRecipients = twilioToNotify
 	}
 
 	smsErr := sms(smsRecipients, notificationMessage)
@@ -164,7 +159,6 @@ func main() {
 	twilioPhone = os.Getenv("TWILIO_PHONE")
 	twilioSid = os.Getenv("TWILIO_SID")
 	twilioToken = os.Getenv("TWILIO_TOKEN")
-	twilioToNotify = strings.Split(os.Getenv("TWILIO_TO_NOTIFY"), ",")
 
 	phoneMapBytes := []byte(os.Getenv("USERNAME_TO_TWILIO"))
 	if len(phoneMapBytes) != 0 {
