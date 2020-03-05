@@ -2,6 +2,7 @@ package main
 
 import (
 	"crypto/tls"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -15,7 +16,9 @@ import (
 	"github.com/hpcloud/tail"
 )
 
-var smtpToNotify, smtpSendAs, smtpHost, smtpPort, smtpUser, smtpPass, twilioPhone, twilioSid, twilioToken, twilioToNotify string
+var smtpToNotify, smtpSendAs, smtpHost, smtpPort, smtpUser, smtpPass, twilioPhone, twilioSid, twilioToken string
+var twilioToNotify []string
+var phoneNumberMap map[string]string
 
 func email(from string, to []string, subject string, body string) error {
 	if len(to) == 0 {
@@ -127,7 +130,18 @@ func sms(to []string, body string) error {
 func notifyJoined(username string) error {
 	notificationMessage := fmt.Sprintf("%s joined your Minecraft server", username)
 
-	smsErr := sms(strings.Split(twilioToNotify, ","), notificationMessage)
+	var smsRecipients []string
+	if userPhoneNumber, ok := phoneNumberMap[username]; ok {
+		for _, targetPhoneNumber := range twilioToNotify {
+			if targetPhoneNumber != userPhoneNumber {
+				smsRecipients = append(smsRecipients, targetPhoneNumber)
+			}
+		}
+	} else {
+		smsRecipients = twilioToNotify
+	}
+
+	smsErr := sms(smsRecipients, notificationMessage)
 	if smsErr != nil {
 		return smsErr
 	}
@@ -150,7 +164,14 @@ func main() {
 	twilioPhone = os.Getenv("TWILIO_PHONE")
 	twilioSid = os.Getenv("TWILIO_SID")
 	twilioToken = os.Getenv("TWILIO_TOKEN")
-	twilioToNotify = os.Getenv("TWILIO_TO_NOTIFY")
+	twilioToNotify = strings.Split(os.Getenv("TWILIO_TO_NOTIFY"), ",")
+
+	phoneMapBytes := []byte(os.Getenv("USERNAME_TO_TWILIO"))
+	if len(phoneMapBytes) != 0 {
+		if err := json.Unmarshal(phoneMapBytes, &phoneNumberMap); err != nil {
+			fmt.Fprintln(os.Stderr, "Error decoding USERNAME_TO_TWILIO:", err)
+		}
+	}
 
 	joinReg, _ := regexp.Compile(`\[Server thread\/INFO\]: ([a-zA-Z0-9_]{1,16}) joined the game`)
 	leftReg, _ := regexp.Compile(`\[Server thread\/INFO\]: ([a-zA-Z0-9_]{1,16}) left the game`)

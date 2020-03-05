@@ -23,6 +23,11 @@ export TWILIO_PHONE=
 # List of comma seperated phone numbers to notify. Same format
 # as for TWILIO_PHONE
 export TWILIO_TO_NOTIFY=
-
+# (Optional) a JSON map of Username to phone number
+# (same format as TWILIO_PHONE) so the person who joined
+# doesn't get texted
+# Make sure to use single quotes surrounding JSON's double quotes!
+# e.g. USERNAME_TO_TWILIO='{"Jenny": "+18005550123"}'
+export USERNAME_TO_TWILIO=
 
 go run main.go <Path to Minecraft latest.log file>
