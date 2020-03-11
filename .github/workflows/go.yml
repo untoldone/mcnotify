@@ -34,4 +34,4 @@ jobs:
       run: go build -v .
 
     - name: just debugging event name things
-      run: echo ${{ github.event_name }} ${{ github.ref }}
+      run: echo ${{ toJson(github.event) }}
