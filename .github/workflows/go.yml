@@ -32,3 +32,6 @@ jobs:
 
     - name: Build
       run: go build -v .
+
+    - name: just debugging event name things
+      run: echo ${{ github.event_name }} ${{ github.ref }}
