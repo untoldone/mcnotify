@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"crypto/tls"
 	"encoding/json"
 	"errors"
@@ -16,7 +17,7 @@ import (
 	"github.com/hpcloud/tail"
 )
 
-var smtpToNotify, smtpSendAs, smtpHost, smtpPort, smtpUser, smtpPass, twilioPhone, twilioSid, twilioToken string
+var smtpToNotify, smtpSendAs, smtpHost, smtpPort, smtpUser, smtpPass, twilioPhone, twilioSid, twilioToken, discordUrl string
 var phoneNumberMap map[string]string
 
 func email(from string, to []string, subject string, body string) error {
@@ -126,6 +127,32 @@ func sms(to []string, body string) error {
 	return nil
 }
 
+func discord(message string) error {
+	if discordUrl == "" {
+		return nil
+	}
+
+	type DiscordMessage struct {
+		Content string `json:"content"`
+	}
+	body := DiscordMessage{
+		Content: message,
+	}
+	bodyBytes, err := json.Marshal(body)
+	if err != nil {
+		return err
+	}
+	buf := bytes.NewBuffer(bodyBytes)
+
+	resp, err := http.Post(discordUrl, "application/json", buf)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	return nil
+}
+
 func notifyJoined(username string) error {
 	notificationMessage := fmt.Sprintf("%s joined your Minecraft server", username)
 
@@ -146,6 +173,11 @@ func notifyJoined(username string) error {
 		return emailErr
 	}
 
+	discordErr := discord(notificationMessage)
+	if discordErr != nil {
+		return discordErr
+	}
+
 	return nil
 }
 
@@ -159,6 +191,7 @@ func main() {
 	twilioPhone = os.Getenv("TWILIO_PHONE")
 	twilioSid = os.Getenv("TWILIO_SID")
 	twilioToken = os.Getenv("TWILIO_TOKEN")
+	discordUrl = os.Getenv("DISCORD_HOOK_URL")
 
 	phoneMapBytes := []byte(os.Getenv("USERNAME_TO_TWILIO"))
 	if len(phoneMapBytes) != 0 {

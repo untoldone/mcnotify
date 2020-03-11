@@ -26,4 +26,7 @@ export TWILIO_PHONE=
 # e.g. USERNAME_TO_TWILIO='{"Jenny": "+18005550123"}'
 export USERNAME_TO_TWILIO=
 
+# The discord webhook url to send a message to. Optional.
+export DISCORD_HOOK_URL=
+
 go run main.go <Path to Minecraft latest.log file>
